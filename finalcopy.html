@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Webcam Example</title>
+    <style>
+        #videoElement {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Webcam Example</h1>
+
+    <div>
+        <label for="cameraSelect">Camera:</label>
+        <select id="cameraSelect"></select>
+    </div>
+    <div>
+        <label for="audioSelect">Audio:</label>
+        <select id="audioSelect"></select>
+    </div>
+    <div>
+        <button onclick="applySelectedDevices()">Apply Devices</button>
+        <button onclick="toggleVideo()">Start/Pause Video</button>
+        <button onclick="stopVideo()">Stop Video</button>
+        <button onclick="toggleAudio()">Toggle Audio</button>
+        <button onclick="takeSnapshot()">Take Snapshot</button>
+    </div>
+    <br>
+    <video autoplay="true" id="videoElement"></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        var videoElement = document.getElementById('videoElement');
+        var cameraSelect = document.getElementById('cameraSelect');
+        var audioSelect = document.getElementById('audioSelect');
+        var currentStream; // Global variable to store the current video stream
+        var isVideoMuted = false;
+        var isAudioMuted = false;
+
+        // Function to get the list of available video devices
+        function getVideoDevices() {
+            return navigator.mediaDevices.enumerateDevices()
+                .then(function (devices) {
+                    return devices.filter(function (device) {
+                        return device.kind === 'videoinput';
+                    });
+                });
+        }
+
+        // Function to get the list of available audio devices
+        function getAudioDevices() {
+            return navigator.mediaDevices.enumerateDevices()
+                .then(function (devices) {
+                    return devices.filter(function (device) {
+                        return device.kind === 'audioinput';
+                    });
+                });
+        }
+
+        // Function to populate the camera select dropdown with available video devices
+        function populateCameraSelect() {
+            getVideoDevices().then(function (devices) {
+                cameraSelect.innerHTML = '';
+                devices.forEach(function (device) {
+                    var option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || 'Camera ' + (cameraSelect.length + 1);
+                    cameraSelect.appendChild(option);
+                });
+            });
+        }
+
+        // Function to populate the audio select dropdown with available audio devices
+        function populateAudioSelect() {
+            getAudioDevices().then(function (devices) {
+                audioSelect.innerHTML = '';
+                devices.forEach(function (device) {
+                    var option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || 'Audio ' + (audioSelect.length + 1);
+                    audioSelect.appendChild(option);
+                });
+            });
+        }
+
+        // Function to apply the selected camera and audio devices
+        function applySelectedDevices() {
+            var selectedCamera = cameraSelect.value;
+            var selectedAudio = audioSelect.value;
+
+            // Stop the current stream if it exists
+            if (currentStream) {
+                currentStream.getTracks().forEach(function (track) {
+                    track.stop();
+                });
+            }
+
+            // Access the selected camera and audio devices
+            navigator.mediaDevices.getUserMedia({
+                video: { deviceId: selectedCamera ? { exact: selectedCamera } : undefined },
+                audio: { deviceId: selectedAudio ? { exact: selectedAudio } : undefined }
+            }).then(function (mediaStream) {
+                // Assign the new stream to the video element
+                videoElement.srcObject = mediaStream;
+                currentStream = mediaStream;
+            }).catch(function (error) {
+                console.log('asdfasdfasfasfd')
+            })
+        }
+    </script>
+</body>

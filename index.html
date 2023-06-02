@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Webcam Example</title>
+    <style>
+        #videoElement {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Webcam Example</h1>
+
+    <video autoplay="true" id="videoElement"></video>
+    <br>
+    <button onclick="takeSnapshot()">Take Snapshot</button>
+    <button onclick="stopVideoStream()">Stop Streaming</button>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        var stream; // Global variable to store the video stream
+
+        // Function to handle video streaming from the webcam
+        function startVideoStream() {
+            // Access the webcam stream
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(function (mediaStream) {
+                    var videoElement = document.getElementById('videoElement');
+                    videoElement.srcObject = mediaStream;
+                    stream = mediaStream; // Store the video stream in the global variable
+                })
+                .catch(function (error) {
+                    console.error("Error accessing the webcam stream: ", error);
+                });
+        }
+
+        // Call the function to start video streaming
+        startVideoStream();
+
+        // Function to take a snapshot from the video stream
+        function takeSnapshot() {
+            var videoElement = document.getElementById('videoElement');
+            // var canvas = document.getElementById('canvas');
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+
+            // Set the canvas dimensions to match the video stream
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+
+            // Draw the current frame of the video stream onto the canvas
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+            // Get the snapshot image data as a base64-encoded URL
+            var snapshotData = canvas.toDataURL('image/png');
+
+            // Create an <a> element and set its attributes for downloading the snapshot
+            var downloadLink = document.createElement('a');
+            downloadLink.href = snapshotData;
+            downloadLink.download = 'snapshot.png';
+
+            // Append the download link to the body and click it programmatically to trigger the download
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+
+            // Remove the download link from the body
+            document.body.removeChild(downloadLink);
+        }
+
+        // Function to stop the video stream
+        function stopVideoStream() {
+            // Stop all tracks in the video stream
+            if (stream && stream.getTracks) {
+                stream.getTracks().forEach(function (track) {
+                    track.stop();
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
